@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -26,14 +27,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
     @WebMvcTest  charakteryzuje testy wyizolowanej warstwy kontrolera.
     Nie potrzebujemy adnotacji @AutoConfigureMockMvc - podejrzyj @WebMvcTest, będzie wiadomo dlaczego :).
  */
-@SpringBootTest
-@AutoConfigureMockMvc
+
+@WebMvcTest
 class GreetControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
+    @MockBean
+    private GreetService greetService;
 
     /*
         TODO 3 pora na mock'owanie - zanim to zrobimy, uruchom test i zaobserwuj logi:
@@ -56,10 +59,12 @@ class GreetControllerTest {
     @DisplayName("http://localhost/greet -> 400")
     public void greetEndpoint_missingName_missingIsFormal_shouldReturn400() throws Exception {
 
+
         mockMvc.perform(MockMvcRequestBuilders.get("/greet")
-                .contentType("application/json"))
-                .andDo(print())
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+                        .contentType("application/json"))
+                        .andDo(print())
+                        .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
     }
 
     @Test
@@ -73,13 +78,14 @@ class GreetControllerTest {
 
             Mockito.when(greetService.greet("X", true)).thenReturn(new Response("Hello, X!", LocalDateTime.now()));
          */
+        Mockito.when(greetService.greet("X", true)).thenReturn(new Response("Hello, X!", LocalDateTime.now()));
 
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/greet")
-                .contentType("application/json")
-                .param("name", "X")
-                .param("isFormal", "true"))
-                .andDo(print())
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                        .contentType("application/json")
+                        .param("name", "X")
+                        .param("isFormal", "true"))
+                        .andDo(print())
+                        .andExpect(MockMvcResultMatchers.status().isOk());
 
         String jsonAsString = resultActions.andReturn().getResponse().getContentAsString();
         Response response = objectMapper.readValue(jsonAsString, Response.class);
@@ -92,8 +98,8 @@ class GreetControllerTest {
     public void greetEndpoint_name_X_missingIsFormal_shouldReturn400() throws Exception {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/greet")
-                .param("name", "X")
-                .contentType("application/json")
+                        .param("name", "X")
+                        .contentType("application/json")
                 )
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -107,13 +113,16 @@ class GreetControllerTest {
             TODO 5 pora na Twoją implementację - analagicznie do todos'a 4  i w oparciu o nazwę testu / komunikat z
              @DisplayName, ustaw zachowanie metody greetService.greet
          */
+        Mockito.when(greetService.greet("World",true)).thenReturn(new Response("Hello, World!",LocalDateTime.now()));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/greet")
-                .contentType("application/json")
-                .param("isFormal", "true"))
+       mockMvc.perform(MockMvcRequestBuilders.get("/greet")
+                        .contentType("application/json")
+                        .param("isFormal", "true"))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.greeting").value("Hello, World!"));
+
+
     }
 
     @Test
@@ -121,8 +130,8 @@ class GreetControllerTest {
     public void greetEndpoint_name_X_IsFormal_X_shouldReturn400() throws Exception {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/greet?name=X")
-                .contentType("application/json")
-                .param("isFormal", "X"))
+                        .contentType("application/json")
+                        .param("isFormal", "X"))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
