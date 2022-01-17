@@ -16,6 +16,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 
 /*
+
     TODO 2 README
     Poniższa adnotacja oznacza test JUnit 5 (bez infrastruktury Spring)
  */
@@ -61,20 +62,26 @@ class GreetServiceTest {
         assertEquals("HELLO, X!", returnedFromService.getGreeting());
     }
 
-}
-
-/*
+    /*
  _______________________________________________________________________________________________________________________
  TODO 1 Przeczytaj TODO 2-5, a następnie utwórz analogicznie test:
  greetXFalse_shouldReturn_responseWithHIX
  _______________________________________________________________________________________________________________________
-                                                         \
-                                                          \
-                                                            /  \~~~/  \
-                                                           (    ..     )~~~~,
-                                                            \__     __/      \
-                                                              )|  /)         |\
-                                                               | /\  /___\   / ^
-                                                                "-|__|   |__|
-
  */
+
+    @Test
+    @DisplayName("greet(\"X\", true) should return a Response with HI, X! greeting")
+    void greetXFalse_shouldReturn_responseWithHIX(){
+        //given
+        String greeting = "Hi, X!";
+        Response stubbedResponse=new Response(greeting,LocalDateTime.now());
+        //when
+        when(responseRepository.save(argThat(response -> greeting.equals(response.getGreeting())))).thenReturn(stubbedResponse);
+        //then
+        Response returnedFromService = greetService.greet("X", false);
+        assertEquals("HI, X!",returnedFromService.getGreeting());
+    }
+}
+
+
+
