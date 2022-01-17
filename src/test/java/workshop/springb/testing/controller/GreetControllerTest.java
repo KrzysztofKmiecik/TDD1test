@@ -84,12 +84,15 @@ class GreetControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @Test
     @DisplayName("http://localhost/greet -> 400")
     public void greetEndpoint_missingName_missingIsFormal_shouldReturn400() throws Exception {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/greet")
-                .contentType("application/json"))
+                        .contentType("application/json"))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
@@ -122,11 +125,16 @@ class GreetControllerTest {
     public void greetEndpoint_name_X_IsFormal_true_shouldReturn200() throws Exception {
 
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/greet")
-                .contentType("application/json")
-                .param("name", "X")
-                .param("isFormal", "true"))
+                        .contentType("application/json")
+                        .param("name", "X")
+                        .param("isFormal", "true"))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.status().isOk());
+
+        String jsonAsString = resultActions.andReturn().getResponse().getContentAsString();
+
+        Response response = objectMapper.readValue(jsonAsString, Response.class);
+        assertEquals("Hello, X!", response.getGreeting());
     }
 
     @Test
@@ -134,8 +142,8 @@ class GreetControllerTest {
     public void greetEndpoint_name_X_missingIsFormal_shouldReturn400() throws Exception {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/greet")
-                .param("name", "X")
-                .contentType("application/json")
+                        .param("name", "X")
+                        .contentType("application/json")
                 )
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
@@ -153,10 +161,11 @@ class GreetControllerTest {
     public void greetEndpoint_missingName_IsFormal_true_shouldReturn200() throws Exception {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/greet")
-                .contentType("application/json")
-                .param("isFormal", "true"))
+                        .contentType("application/json")
+                        .param("isFormal", "true"))
                 .andDo(print())
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.greeting").value("Hello, World!"));
     }
 
     @Test
@@ -164,8 +173,8 @@ class GreetControllerTest {
     public void greetEndpoint_name_X_IsFormal_X_shouldReturn400() throws Exception {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/greet?name=X")
-                .contentType("application/json")
-                .param("isFormal", "X"))
+                        .contentType("application/json")
+                        .param("isFormal", "X"))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
