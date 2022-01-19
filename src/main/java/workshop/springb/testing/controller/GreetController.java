@@ -24,8 +24,8 @@ public class GreetController {
     }
 
     @GetMapping("/greetJSON")
-    public Response greetJSON(@RequestBody Request request){
-        return greetService.greet(request.getName(),request.isFormal());
+    public Response greetJSON(@RequestBody Request request) {
+        return greetService.greet(request.getName(), request.isFormal());
     }
 
 }
